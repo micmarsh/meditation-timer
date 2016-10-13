@@ -37,7 +37,7 @@
             #js {:tick 1
                  :ontick (fn [& args] (re-frame/dispatch (into on-tick args)))
                  :onend  (fn [& args] (re-frame/dispatch (into on-finished args)))})
-           (* 60 time)))))
+           time))))
 
 (re-frame/reg-fx
  :timer/pause
@@ -61,9 +61,24 @@
   (fn [_ _]
     app-db))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
   :start-countdown
   validate-spec-mw
-  (fn [db [_ value]]
-    (assoc db :greeting (str (type Timer)))))
+  (fn [{:keys [db]} [_ {:keys [initial max min]}]]
+    {:timer/start-new {:id :initial-countdown
+                       :time initial ;; seconds
+                       :on-tick [:initial-timer-update]
+                       :on-finished [:initial-timer-done min max]}
+     :db (assoc db :greeting (str "counting down from " initial " seconds"))}))
+
+(re-frame/reg-event-db
+ :initial-timer-update
+ (fn [db [_ & args]]
+   (assoc db :greeting (str args))))
+
+(re-frame/reg-event-db
+ :initial-timer-done
+ (fn [db [_ min max]]
+   (assoc db :greeting (str "Initial countdown done! "  min " " max))))
+;(* 60 (+ min (int (* (rand) (- max min)))))
 

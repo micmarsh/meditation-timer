@@ -62,32 +62,3 @@
 (defn init []
       (dispatch-sync [:initialize-db])
       (.registerComponent app-registry "MeditationTimer" #(r/reactify-component app-root)))
-
-(comment
-  ;; Dumb timer scratchwork
-  {:timer/start-new {:id 'blah
-                     :time [12 :minutes]
-                     :tick [1 :seconds] ;; optional, this is default
-                     :on-tick [:blah-tick]
-                     :on-finished [:blah-finished]}}
-
-  {:timer/pause 'blah}
-  {:timer/unpause 'blah}
-  {:timer/stop 'blah}
-
-  (re-frame/reg-event-fx
-   :blah-tick
-   (fn [cofx [_ {:keys [total-time current-time id]}]]
-     ;; total-time is millis? Some kind of fancy-ass unit relating to
-     ;; the DSL above?
-     ;; Yeah fuck that^, these will be fucking millis. Provide
-     ;; convenience converters if they're that sorely needed
-     ))
-
-  (re-frame/reg-event-fx
-   :blah-finished
-   (fn [cofx [_ {:keys [total-time id]}]]
-     ;; total-time is millis? Yes
-     ))
-  
-  )
