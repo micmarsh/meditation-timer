@@ -2,6 +2,7 @@
   (:require
     [re-frame.core :as re-frame]
     [clojure.spec :as s]
+    [meditation-timer.config :refer [debug?]]
     [meditation-timer.db :as db :refer [app-db]]))
 
 ;; -- Middleware ------------------------------------------------------------
@@ -16,7 +17,7 @@
       (throw (ex-info (str "Spec check failed: " explain-data) explain-data)))))
 
 (def validate-spec-mw
-  (if goog.DEBUG
+  (if debug?
     (re-frame/after (partial check-and-throw ::db/app-db))
     []))
 
@@ -80,8 +81,6 @@
 
 (re-frame/reg-cofx :rand (fn [cofx _] (assoc cofx :rand (rand))))
 
-(def debug? ^boolean js/goog.DEBUG)
-
 (defn calculate-time [rand min max]
   (* (if debug? 1 60)
      (+ min (int (* rand (- max min))))))
@@ -96,30 +95,38 @@
                         :time time
                         :on-finished [:main-timer-done time]})}))
 
+(defn result-time-message [time]
+  (str "Meditated for "
+       (if debug?
+         (str time " seconds")
+         (let [result (quot time 60)]
+           (if (== 1 result)
+             "1 minute"
+             (str result " minutes"))))))
+
 (re-frame/reg-event-db
  :main-timer-done
  validate-spec-mw
  (fn [db [_ time]]
-   (assoc db :message (str "Meditated for " time " "
-                            (if debug?
-                              "seconds"
-                              "minutes"))
-          :state :done)))
+   (assoc db :state :done :message (result-time-message time))))
 
 (re-frame/reg-event-fx
  :pause-current-timer
+ validate-spec-mw
  (fn [{:keys [db]} _]
    {:db (assoc db :paused? true)
     :timer/pause :current-countdown}))
 
 (re-frame/reg-event-fx
  :resume-current-timer
+ validate-spec-mw
  (fn [{:keys [db]} _]
    {:db (assoc db :paused? false)
     :timer/unpause :current-countdown}))
 
 (re-frame/reg-event-fx
  :stop-current-timer
+ validate-spec-mw
  (fn [{:keys [db]} _]
    {:db app-db
     :timer/stop :current-countdown}))

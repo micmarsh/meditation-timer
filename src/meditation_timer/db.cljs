@@ -10,6 +10,6 @@
                    ::state]))
 
 ;; initial state of app-db
-(def app-db {:message "Enter an initial countdown (seconds), max and min minutes"
+(def app-db {:message "Enter your desired parameters"
              :state :start
              :paused? false})
