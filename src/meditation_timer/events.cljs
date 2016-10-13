@@ -35,7 +35,9 @@
           (.start
            (Timer.
             #js {:tick 1
-                 :ontick (fn [& args] (re-frame/dispatch (into on-tick args)))
+                 :ontick (fn [& args]
+                           (when on-tick
+                             (re-frame/dispatch (into on-tick args))))
                  :onend  (fn [& args] (re-frame/dispatch (into on-finished args)))})
            time))))
 
@@ -69,16 +71,28 @@
                        :time initial ;; seconds
                        :on-tick [:initial-timer-update]
                        :on-finished [:initial-timer-done min max]}
-     :db (assoc db :greeting (str "counting down from " initial " seconds"))}))
+     :db (assoc db :greeting (str initial " seconds to start"))}))
 
 (re-frame/reg-event-db
  :initial-timer-update
- (fn [db [_ & args]]
-   (assoc db :greeting (str args))))
+ (fn [db [_ millis-left]]
+   (assoc db :greeting (str (inc (quot millis-left 1000)) " seconds to start"))))
+
+(re-frame/reg-cofx
+ :rand
+ (fn [cofx _] (assoc cofx :rand (rand))))
+
+(re-frame/reg-event-fx
+ :initial-timer-done
+ (re-frame/inject-cofx :rand)
+ (fn [{:keys [db rand]} [_ min max]]
+   {:db (assoc db :greeting "Meditating...")
+    :timer/start-new (let [time (* #_60 (+ min (int (* rand (- max min)))))]
+                       {:id :main-countdown
+                        :time time
+                        :on-finished [:main-timer-done time]})}))
 
 (re-frame/reg-event-db
- :initial-timer-done
- (fn [db [_ min max]]
-   (assoc db :greeting (str "Initial countdown done! "  min " " max))))
-;(* 60 (+ min (int (* (rand) (- max min)))))
-
+ :main-timer-done
+ (fn [db [_ time]]
+   (assoc db :greeting (str "Meditated for " time " seconds (b/c dev)"))))
