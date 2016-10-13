@@ -64,35 +64,62 @@
     app-db))
 
 (re-frame/reg-event-fx
-  :start-countdown
-  validate-spec-mw
-  (fn [{:keys [db]} [_ {:keys [initial max min]}]]
-    {:timer/start-new {:id :initial-countdown
-                       :time initial ;; seconds
-                       :on-tick [:initial-timer-update]
-                       :on-finished [:initial-timer-done min max]}
-     :db (assoc db :greeting (str initial " seconds to start"))}))
+ :start-countdown
+ validate-spec-mw
+ (fn [{:keys [db]} [_ {:keys [initial max min]}]]
+   {:timer/start-new {:id :current-countdown
+                      :time initial ;; seconds
+                      :on-tick [:initial-timer-update]
+                      :on-finished [:initial-timer-done min max]}
+    :db (assoc db :message (str initial " seconds to start") :state :initial-countdown)}))
 
 (re-frame/reg-event-db
  :initial-timer-update
  (fn [db [_ millis-left]]
-   (assoc db :greeting (str (inc (quot millis-left 1000)) " seconds to start"))))
+   (assoc db :message (str (inc (quot millis-left 1000)) " seconds to start"))))
 
-(re-frame/reg-cofx
- :rand
- (fn [cofx _] (assoc cofx :rand (rand))))
+(re-frame/reg-cofx :rand (fn [cofx _] (assoc cofx :rand (rand))))
+
+(def debug? ^boolean js/goog.DEBUG)
+
+(defn calculate-time [rand min max]
+  (* (if debug? 1 60)
+     (+ min (int (* rand (- max min))))))
 
 (re-frame/reg-event-fx
  :initial-timer-done
- (re-frame/inject-cofx :rand)
+ [validate-spec-mw (re-frame/inject-cofx :rand)]
  (fn [{:keys [db rand]} [_ min max]]
-   {:db (assoc db :greeting "Meditating...")
-    :timer/start-new (let [time (* #_60 (+ min (int (* rand (- max min)))))]
-                       {:id :main-countdown
+   {:db (assoc db :message "Meditating..." :state :main-countdown)
+    :timer/start-new (let [time (calculate-time rand min max)]
+                       {:id :current-countdown
                         :time time
                         :on-finished [:main-timer-done time]})}))
 
 (re-frame/reg-event-db
  :main-timer-done
+ validate-spec-mw
  (fn [db [_ time]]
-   (assoc db :greeting (str "Meditated for " time " seconds (b/c dev)"))))
+   (assoc db :message (str "Meditated for " time " "
+                            (if debug?
+                              "seconds"
+                              "minutes"))
+          :state :done)))
+
+(re-frame/reg-event-fx
+ :pause-current-timer
+ (fn [{:keys [db]} _]
+   {:db (assoc db :paused? true)
+    :timer/pause :current-countdown}))
+
+(re-frame/reg-event-fx
+ :resume-current-timer
+ (fn [{:keys [db]} _]
+   {:db (assoc db :paused? false)
+    :timer/unpause :current-countdown}))
+
+(re-frame/reg-event-fx
+ :stop-current-timer
+ (fn [{:keys [db]} _]
+   {:db app-db
+    :timer/stop :current-countdown}))
