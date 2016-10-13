@@ -32,17 +32,23 @@
          (reset! atom))))
 
 (defn app-root []
-  (let [greeting (subscribe [:get-greeting])
+  (let [message (subscribe [:main-message])
         initial-countdown (atom "")
         min-minutes (atom "")
         max-minutes (atom "")]
     (fn []
       [view {:style {:flex-direction "column" :margin 40 :align-items "center"}}
-       [text {:style {:font-size 30 :font-weight "100" :margin-bottom 20 :text-align "center"}} @greeting]
+       [text {:style {:font-size 30 :font-weight "100" :margin-bottom 20 :text-align "center"}} @message]
        [touchable-highlight {:style {:background-color "#999" :padding 10 :border-radius 5}
-                             :on-press #(alert (str (< (number @min-minutes) (number @max-minutes))))}
-        [text {:style {:color "white" :text-align "center" :font-weight "bold"}} "press me"]]
-       [view {:style {:flex-direction "row" :margin 20 :align-items "center"}}
+                             :on-press #(let [max (number @max-minutes)
+                                              min (number @min-minutes)
+                                              initial (number @initial-countdown)]
+                                          (when (and number (< min max))
+                                            (dispatch [:start-countdown {:initial initial
+                                                                         :max max
+                                                                         :min min}])))}
+        [text {:style {:color "white" :text-align "center" :font-weight "bold"}} "Start Timer"]]
+       [view {:style {:flex-direction "row" :align-items "center"}}
         [text-input {:keyboard-type "numeric"
                      :style {:font-size 20 :width 50}
                      :on-change (text-bind-callback initial-countdown)}]
