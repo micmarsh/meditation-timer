@@ -35,9 +35,10 @@
 (re-frame/reg-event-fx
  :start-countdown
  validate-spec-mw
- (fn [{:keys [db]} [_ {:keys [initial max min]}]]
+ (fn [{:keys [db]} [_ {:keys [initial max min countdowns]}]]
    {:timer/start-new {:id :current-countdown
-                      :time initial ;; seconds
+                      :time initial
+                      :countdowns countdowns
                       :on-tick [:initial-timer-update]
                       :on-finished [:initial-timer-done min max]}
     :db (assoc db :message (str initial " seconds to start") :state :initial-countdown)}))
