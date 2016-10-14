@@ -4,11 +4,16 @@
             [meditation-timer.config :refer [debug?]]
             [meditation-timer.sound :as s]
             [meditation-timer.events]
-            [meditation-timer.subs]))
+            [meditation-timer.subs]
+
+            [meditation-timer.timer.impl.timer-js :refer [->countdowns]]))
 
 (enable-console-print!)
 
 (def ReactNative (js/require "react-native"))
+(def Sound (js/require "react-native-sound"))
+(def Timer (js/require "timer.js"))
+(def countdowns (->countdowns Timer))
 
 (def app-registry (.-AppRegistry ReactNative))
 (def text (r/adapt-react-class (.-Text ReactNative)))
@@ -70,6 +75,7 @@
                  initial (number @initial-countdown)]
              (when (and initial (< min max))
                (dispatch [:start-countdown {:initial initial
+                                            :countdowns countdowns
                                             :max max
                                             :min min}])))])
        (if @counting-down?
@@ -82,8 +88,6 @@
           [number-input "Initial\nSeconds" initial-countdown]
           [number-input (str "Minimum\n" sit-unit) min-minutes]
           [number-input (str "Maximum\n" sit-unit) max-minutes]])])))
-
-(def Sound (js/require "react-native-sound"))
 
 (def bell (Sound. "bell.mp3"
                   (.-MAIN_BUNDLE Sound)
