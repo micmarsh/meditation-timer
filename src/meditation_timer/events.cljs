@@ -4,7 +4,7 @@
     [clojure.spec :as s]
     [meditation-timer.config :refer [debug?]]
     [meditation-timer.db :as db :refer [app-db]]
-    [meditation-timer.fx.timer]))
+    [meditation-timer.timer.fx]))
 
 ;; -- Middleware ------------------------------------------------------------
 ;;
@@ -40,7 +40,7 @@
                       :time initial
                       :countdowns countdowns
                       :on-tick [:initial-timer-update]
-                      :on-finished [:initial-timer-done min max]}
+                      :on-finished [:initial-timer-done countdowns min max]}
     :db (assoc db :message (str initial " seconds to start") :state :initial-countdown)}))
 
 (re-frame/reg-event-db
@@ -57,11 +57,12 @@
 (re-frame/reg-event-fx
  :initial-timer-done
  [validate-spec-mw (re-frame/inject-cofx :rand)]
- (fn [{:keys [db rand]} [_ min max]]
+ (fn [{:keys [db rand]} [_ countdowns min max]]
    {:db (assoc db :message "Meditating..." :state :main-countdown)
     :sound/play :bell-sound
     :timer/start-new (let [time (calculate-time rand min max)]
                        {:id :current-countdown
+                        :countdowns countdowns
                         :time time
                         :on-finished [:main-timer-done time]})}))
 

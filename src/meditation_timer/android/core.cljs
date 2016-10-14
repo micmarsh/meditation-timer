@@ -6,14 +6,14 @@
             [meditation-timer.events]
             [meditation-timer.subs]
 
-            [meditation-timer.timer.impl.timer-js :refer [->countdowns]]))
+            [meditation-timer.timer.impl.intervals :refer [->countdowns]]))
 
 (enable-console-print!)
 
 (def ReactNative (js/require "react-native"))
 (def Sound (js/require "react-native-sound"))
-(def Timer (js/require "timer.js"))
-(def countdowns (->countdowns Timer))
+
+(def countdowns (->countdowns js/setInterval js/clearInterval))
 
 (def app-registry (.-AppRegistry ReactNative))
 (def text (r/adapt-react-class (.-Text ReactNative)))
