@@ -8,7 +8,6 @@
     "prod": "env/prod"
   },
   "modules": [
-    "timer.js",
     "react-native-sound",
     "react-native-background-timer"
   ],
