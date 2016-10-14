@@ -6,6 +6,8 @@
             [meditation-timer.events]
             [meditation-timer.subs]))
 
+(enable-console-print!)
+
 (def ReactNative (js/require "react-native"))
 
 (def app-registry (.-AppRegistry ReactNative))
@@ -13,9 +15,6 @@
 (def view (r/adapt-react-class (.-View ReactNative)))
 (def touchable-highlight (r/adapt-react-class (.-TouchableHighlight ReactNative)))
 (def text-input (r/adapt-react-class (.-TextInput ReactNative)))
-
-
-(def logo-img (js/require "./images/cljs.png"))
 
 (defn number [string]
   (when-not (empty? string)
@@ -86,7 +85,8 @@
 
 (def Sound (js/require "react-native-sound"))
 
-(def bell (Sound. "bell.mp3" (.-MAIN_BUNDLE Sound)
+(def bell (Sound. "bell.mp3"
+                  (.-MAIN_BUNDLE Sound)
                   (fn [error]
                     (if error
                       (alert "failed to load sound bell.mp3")
