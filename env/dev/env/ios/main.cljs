@@ -1,6 +1,6 @@
  (ns ^:figwheel-no-load env.ios.main
   (:require [reagent.core :as r]
-            [meditation-timer.ios.core :as core]
+            [meditation-timer.native.core :as core]
             [figwheel.client :as figwheel :include-macros true]))
 
  (enable-console-print!)

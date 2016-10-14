@@ -1,6 +1,6 @@
  (ns ^:figwheel-no-load env.android.main
   (:require [reagent.core :as r]
-            [meditation-timer.android.core :as core]
+            [meditation-timer.native.core :as core]
             [figwheel.client :as figwheel :include-macros true]))
 
  (enable-console-print!)

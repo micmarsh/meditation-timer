@@ -1,4 +1,4 @@
-(ns meditation-timer.android.core
+(ns meditation-timer.native.core
   (:require [reagent.core :as r]
             [re-frame.core :refer [subscribe dispatch dispatch-sync]]
             [meditation-timer.config :refer [debug?]]
