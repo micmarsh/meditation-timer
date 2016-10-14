@@ -9,7 +9,8 @@
   },
   "modules": [
     "timer.js",
-    "react-native-sound"
+    "react-native-sound",
+    "react-native-background-timer"
   ],
   "imageDirs": [
     "images"

@@ -35,8 +35,8 @@
     (reset! interval-store interval)
     (swap! current-time update-fn tick-ms)
     (reify
-      p/Pause (pause [this] (reset! @paused? true) this)
-      p/Resume (resume [this] (reset! @paused? false) this)
+      p/Pause (pause [this] (reset! paused? true) this)
+      p/Resume (resume [this] (reset! paused? false) this)
       p/Stop (stop [this] (clear-interval @interval-store) this))))
 
 (defrecord countdowns [set-interval clear-interval]

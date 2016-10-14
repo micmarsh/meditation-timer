@@ -13,7 +13,11 @@
 (def ReactNative (js/require "react-native"))
 (def Sound (js/require "react-native-sound"))
 
-(def countdowns (->countdowns js/setInterval js/clearInterval))
+(def BackgroundTimer (js/require "react-native-background-timer"))
+
+(def countdowns
+  (->countdowns (.-setInterval BackgroundTimer)
+                (.-clearInterval BackgroundTimer)))
 
 (def app-registry (.-AppRegistry ReactNative))
 (def text (r/adapt-react-class (.-Text ReactNative)))
