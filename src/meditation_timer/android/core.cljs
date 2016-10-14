@@ -84,7 +84,19 @@
           [number-input (str "Minimum\n" sit-unit) min-minutes]
           [number-input (str "Maximum\n" sit-unit) max-minutes]])])))
 
+(def Sound (js/require "react-native-sound"))
+
+(def bell (Sound. "bell.mp3" (.-MAIN_BUNDLE Sound)
+                  (fn [error]
+                    (if error
+                      (alert "failed to load sound bell.mp3")
+                      (println "yay sound loaded")))))
+
+(extend-protocol meditation-timer.events/PlaySound
+  Sound
+  (play [this]
+    (.play bell #(when-not % (alert "error playing bell.mp3")))))
+
 (defn init []
-  (dispatch-sync [:initialize (reify meditation-timer.events/PlaySound
-                                (play [_] (alert "DING!!!")))])
+  (dispatch-sync [:initialize bell])
   (.registerComponent app-registry "MeditationTimer" #(r/reactify-component app-root)))

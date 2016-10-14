@@ -27,7 +27,7 @@
   "id -> Timer js object"
   (atom {}))
 
-(def Timer (js/require "timer"))
+(def Timer (js/require "timer.js"))
 
 (re-frame/reg-fx
  :timer/start-new

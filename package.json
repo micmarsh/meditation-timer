@@ -8,6 +8,7 @@
   "dependencies": {
     "react": "15.3.2",
     "react-native": "0.34.0",
+    "react-native-sound": "^0.8.3",
     "timer.js": "^1.0.4"
   }
 }
