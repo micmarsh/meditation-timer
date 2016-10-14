@@ -56,13 +56,37 @@
    (swap! timers update id #(.stop %))
    (swap! timers dissoc id)))
 
+(defprotocol PlaySound (play [this]))
+(extend-protocol PlaySound
+  nil
+  (play [_] (println "Attempted to `play` nil")))
+
+
+(def sounds
+  "id -> thing that implements PlaySound"
+  (atom {}))
+
+(re-frame/reg-fx
+ :sound/register-new
+ (fn [{:keys [id sound]}]
+   (swap! sounds assoc id sound)))
+
+(re-frame/reg-fx
+ :sound/play
+ (fn [id]
+   (if-let [sound (get @sounds id)]
+     (play sound)
+     (println "No sound found for id" id))))
+
 ;; -- Handlers --------------------------------------------------------------
 
-(re-frame/reg-event-db
-  :initialize-db
+(re-frame/reg-event-fx
+  :initialize
   validate-spec-mw
-  (fn [_ _]
-    app-db))
+  (fn [_ [_ playable-sound]]
+    {:db app-db
+     :sound/register-new {:id :bell-sound
+                          :sound playable-sound}}))
 
 (re-frame/reg-event-fx
  :start-countdown
@@ -90,6 +114,7 @@
  [validate-spec-mw (re-frame/inject-cofx :rand)]
  (fn [{:keys [db rand]} [_ min max]]
    {:db (assoc db :message "Meditating..." :state :main-countdown)
+    :sound/play :bell-sound
     :timer/start-new (let [time (calculate-time rand min max)]
                        {:id :current-countdown
                         :time time
@@ -104,11 +129,12 @@
              "1 minute"
              (str result " minutes"))))))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :main-timer-done
  validate-spec-mw
- (fn [db [_ time]]
-   (assoc db :state :done :message (result-time-message time))))
+ (fn [{:keys [db]} [_ time]]
+   {:db (assoc db :state :done :message (result-time-message time))
+    :sound/play :bell-sound}))
 
 (re-frame/reg-event-fx
  :pause-current-timer

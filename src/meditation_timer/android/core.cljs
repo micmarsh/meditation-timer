@@ -85,5 +85,6 @@
           [number-input (str "Maximum\n" sit-unit) max-minutes]])])))
 
 (defn init []
-      (dispatch-sync [:initialize-db])
-      (.registerComponent app-registry "MeditationTimer" #(r/reactify-component app-root)))
+  (dispatch-sync [:initialize (reify meditation-timer.events/PlaySound
+                                (play [_] (alert "DING!!!")))])
+  (.registerComponent app-registry "MeditationTimer" #(r/reactify-component app-root)))
