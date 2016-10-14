@@ -74,8 +74,7 @@
                                             :max max
                                             :min min}])))])
        (if @counting-down?
-         [view {:style {:flex-direction "column" :align-items "center"
-                        :margin-top 20}}
+         [view {:style {:flex-direction "column" :align-items "center" :margin-top 20}}
           [text {:style {:font-size 20 :font-weight "100" :text-align "center" :color "#ccc"}}
            (str "Minimum " sit-unit ": " @min-minutes)]
           [text {:style {:font-size 20 :font-weight "100" :text-align "center" :color "#ccc"}}
