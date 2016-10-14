@@ -2,6 +2,7 @@
   (:require [reagent.core :as r]
             [re-frame.core :refer [subscribe dispatch dispatch-sync]]
             [meditation-timer.config :refer [debug?]]
+            [meditation-timer.sound :as s]
             [meditation-timer.events]
             [meditation-timer.subs]))
 
@@ -92,7 +93,7 @@
                       (alert "failed to load sound bell.mp3")
                       (println "yay sound loaded")))))
 
-(extend-protocol meditation-timer.events/PlaySound
+(extend-protocol s/PlaySound
   Sound
   (play [this]
     (.play bell #(when-not % (alert "error playing bell.mp3")))))

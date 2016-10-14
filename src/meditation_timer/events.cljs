@@ -3,7 +3,8 @@
     [re-frame.core :as re-frame]
     [clojure.spec :as s]
     [meditation-timer.config :refer [debug?]]
-    [meditation-timer.db :as db :refer [app-db]]))
+    [meditation-timer.db :as db :refer [app-db]]
+    [meditation-timer.fx.timer]))
 
 ;; -- Middleware ------------------------------------------------------------
 ;;
@@ -20,63 +21,6 @@
   (if debug?
     (re-frame/after (partial check-and-throw ::db/app-db))
     []))
-
-;; -- FX (move this shit elsewhere) -----------------------------------------
-
-(def timers
-  "id -> Timer js object"
-  (atom {}))
-
-(def Timer (js/require "timer.js"))
-
-(re-frame/reg-fx
- :timer/start-new
- (fn [{:keys [id time on-tick on-finished]}]
-   (swap! timers assoc id
-          (.start
-           (Timer.
-            #js {:tick 1
-                 :ontick (fn [& args]
-                           (when on-tick
-                             (re-frame/dispatch (into on-tick args))))
-                 :onend  (fn [& args] (re-frame/dispatch (into on-finished args)))})
-           time))))
-
-(re-frame/reg-fx
- :timer/pause
- (fn [id] (swap! timers update id #(.pause %))))
-
-(re-frame/reg-fx
- :timer/unpause
- (fn [id] (swap! timers update id #(.start %))))
-
-(re-frame/reg-fx
- :timer/stop
- (fn [id]
-   (swap! timers update id #(.stop %))
-   (swap! timers dissoc id)))
-
-(defprotocol PlaySound (play [this]))
-(extend-protocol PlaySound
-  nil
-  (play [_] (println "Attempted to `play` nil")))
-
-
-(def sounds
-  "id -> thing that implements PlaySound"
-  (atom {}))
-
-(re-frame/reg-fx
- :sound/register-new
- (fn [{:keys [id sound]}]
-   (swap! sounds assoc id sound)))
-
-(re-frame/reg-fx
- :sound/play
- (fn [id]
-   (if-let [sound (get @sounds id)]
-     (play sound)
-     (println "No sound found for id" id))))
 
 ;; -- Handlers --------------------------------------------------------------
 
