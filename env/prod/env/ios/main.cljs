@@ -1,5 +1,5 @@
  (ns env.ios.main
-  (:require [meditation-timer.ios.core :as core]))
+  (:require [meditation-timer.native.core :as core]))
 
  (core/init)
 
