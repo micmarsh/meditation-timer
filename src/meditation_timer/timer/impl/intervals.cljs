@@ -18,26 +18,23 @@
                                clear-interval (->throw-ex "Need to provide a clearInterval implementation")}
                           :as options}]
   (let [current-time (atom time-ms)
-        paused? (atom false)
         tick-ms (* 1000 tick)
         interval-store (atom nil)
         update-fn (fn [time-ms tick-ms]
-                    (if (finished? time-ms)
-                      (do (clear-interval @interval-store)
-                          (on-finished)
-                          0)
-                      (let [ms-left (- time-ms tick-ms)]
-                        (on-tick ms-left)
-                        ms-left)))
-        interval (set-interval
-                  #(when-not @paused? (swap! current-time update-fn tick-ms))
-                  tick-ms)]
-    (reset! interval-store interval)
-    (swap! current-time update-fn tick-ms)
+                    (let [ms-left (- time-ms tick-ms)]
+                      (if (finished? time-ms)
+                        (do (clear-interval @interval-store)
+                            (on-finished))
+                        (on-tick ms-left))
+                      ms-left))
+        tick! (fn [] (swap! current-time update-fn tick-ms))
+        start! #(set-interval (fn [] (tick!)) tick-ms)]
+    (reset! interval-store (start!))
+    (tick!)
     (reify
-      p/Pause (pause [this] (reset! paused? true) this)
-      p/Resume (resume [this] (reset! paused? false) this)
-      p/Stop (stop [this] (clear-interval @interval-store) this))))
+      p/Pause (pause [this] (clear-interval @interval-store) this)
+      p/Stop (stop [this] (clear-interval @interval-store) this)
+      p/Resume (resume [this] (reset! interval-store (start!)) this))))
 
 (defrecord countdowns [set-interval clear-interval]
   p/StartCountdown

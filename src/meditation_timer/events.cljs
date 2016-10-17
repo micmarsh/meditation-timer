@@ -64,7 +64,15 @@
                        {:id :current-countdown
                         :countdowns countdowns
                         :time time
+                        :tick (if debug? 1 15)
+                        :on-tick [:countdown-log]
                         :on-finished [:main-timer-done time]})}))
+
+(re-frame/reg-event-fx
+ :countdown-log
+ (fn [_ [_ millis-left]]
+   (println "Main countdown " millis-left "milliseconds left")
+   {}))
 
 (defn result-time-message [time]
   (str "Meditated for "
