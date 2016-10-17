@@ -11,7 +11,7 @@ public class WakeLockModule extends ReactContextBaseJavaModule {
 
     private PowerManager.WakeLock mWakeLock = null;
 
-    private String TAG = "native wakelock";
+    private String TAG = "NATIVE GLOBAL WAKELOCK";
     
     public WakeLockModule (ReactApplicationContext reactContext) {
         super(reactContext);
@@ -23,7 +23,9 @@ public class WakeLockModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void acquire (long timeout) {
+    public void acquire (int timeout) {
+        release();
+        
         ReactContext c = getReactApplicationContext();
         PowerManager p = (PowerManager) c.getSystemService(c.POWER_SERVICE);
         mWakeLock = p.newWakeLock(p.PARTIAL_WAKE_LOCK, TAG);
@@ -32,7 +34,7 @@ public class WakeLockModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void release () {
-        if (mWakeLock != null) {
+        if (mWakeLock != null && mWakeLock.isHeld()) {
             mWakeLock.release();
             mWakeLock = null;
         } 

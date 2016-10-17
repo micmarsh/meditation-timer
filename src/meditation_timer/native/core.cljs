@@ -6,18 +6,29 @@
             [meditation-timer.events]
             [meditation-timer.subs]
 
-            [meditation-timer.timer.impl.intervals :refer [->countdowns]]))
+            [meditation-timer.timer.impl.intervals :refer [map->countdowns]]))
 
 (enable-console-print!)
 
 (def ReactNative (js/require "react-native"))
-(def Sound (js/require "react-native-sound"))
 
+(def WakeLock
+  (-> ReactNative
+      (.-NativeModules)
+      (.-WakeLock)))
+
+(def Sound (js/require "react-native-sound"))
 (def BackgroundTimer (js/require "react-native-background-timer"))
 
 (def countdowns
-  (->countdowns (.-setInterval BackgroundTimer)
-                (.-clearInterval BackgroundTimer)))
+  (map->countdowns
+   (merge
+    {:set-interval (.-setInterval BackgroundTimer)
+     :clear-interval (.-clearInterval BackgroundTimer)}
+    {:start-wakelock (.-acquire WakeLock)
+     :stop-wakelock (.-release WakeLock)}
+    #_{:start-wakelock (fn [ms] (println "acquiring wakelock for" ms "milliseconds"))
+     :stop-wakelock (fn [] (println "releasing wakelock"))})))
 
 (def app-registry (.-AppRegistry ReactNative))
 (def text (r/adapt-react-class (.-Text ReactNative)))

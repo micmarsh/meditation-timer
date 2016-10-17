@@ -9,8 +9,11 @@
 
 (def finished? (some-fn neg? zero?))
 
+(def ^:const +padding+ 5000)
+
 (defn countdown [time-ms {:keys [on-tick on-finished tick
-                                 set-interval clear-interval]
+                                 set-interval clear-interval
+                                 start-wakelock stop-wakelock]
                           :or {on-tick noop
                                on-finished noop
                                tick 1
@@ -28,15 +31,20 @@
                         (on-tick ms-left))
                       ms-left))
         tick! (fn [] (swap! current-time update-fn tick-ms))
-        start! #(set-interval (fn [] (tick!)) tick-ms)]
+        start! (fn []
+                 (start-wakelock (+ +padding+ @current-time))
+                 (set-interval (fn [] (tick!)) tick-ms))
+        end! #(do (clear-interval @interval-store) (stop-wakelock))]
     (reset! interval-store (start!))
     (tick!)
     (reify
-      p/Pause (pause [this] (clear-interval @interval-store) this)
-      p/Stop (stop [this] (clear-interval @interval-store) this)
+      p/Pause (pause [this] (end!) this)
+      p/Stop (stop [this] (end!) this)
       p/Resume (resume [this] (reset! interval-store (start!)) this))))
 
-(defrecord countdowns [set-interval clear-interval]
+(defrecord countdowns
+    [set-interval clear-interval
+     start-wakelock stop-wakelock]
   p/StartCountdown
   (start-countdown [this time-secs options]
     (countdown (* 1000 time-secs) (merge options this))))
